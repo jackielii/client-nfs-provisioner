@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
         - name: client-nfs-provisioner
-          image: quay.io/jackieli/client-nfs-provisioner:latest
+          image: quay.io/jackieli/client-nfs-provisioner:v1
           volumeMounts:
             - name: client-nfs-root
               mountPath: /persistentvolumes
