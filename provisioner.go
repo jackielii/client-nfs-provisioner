@@ -10,7 +10,6 @@ import (
 
 	"strings"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/golang/glog"
 	"github.com/kubernetes-incubator/external-storage/lib/controller"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,8 +44,6 @@ const (
 var _ controller.Provisioner = &nfsProvisioner{}
 
 func NewClientNFSProvisioner(client kubernetes.Interface) controller.Provisioner {
-	// spew.Dump(client)
-	// client.CoreV1().Pods()
 	server := os.Getenv("NFS_SERVER")
 	if server == "" {
 		glog.Fatal("NFS_SERVER not set")
@@ -63,7 +60,6 @@ func NewClientNFSProvisioner(client kubernetes.Interface) controller.Provisioner
 }
 
 func (p *nfsProvisioner) Provision(options controller.VolumeOptions) (*v1.PersistentVolume, error) {
-	spew.Dump(options)
 	if options.PVC.Spec.Selector != nil {
 		return nil, fmt.Errorf("claim Selector is not supported")
 	}
