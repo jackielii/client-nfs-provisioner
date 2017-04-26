@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
-
 	"strings"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/kubernetes-incubator/external-storage/lib/controller"
@@ -42,22 +41,6 @@ const (
 )
 
 var _ controller.Provisioner = &nfsProvisioner{}
-
-func NewClientNFSProvisioner(client kubernetes.Interface) controller.Provisioner {
-	server := os.Getenv("NFS_SERVER")
-	if server == "" {
-		glog.Fatal("NFS_SERVER not set")
-	}
-	path := os.Getenv("NFS_PATH")
-	if path == "" {
-		glog.Fatal("NFS_PATH not set")
-	}
-	return &nfsProvisioner{
-		client: client,
-		server: server,
-		path:   path,
-	}
-}
 
 func (p *nfsProvisioner) Provision(options controller.VolumeOptions) (*v1.PersistentVolume, error) {
 	if options.PVC.Spec.Selector != nil {
@@ -113,6 +96,19 @@ func main() {
 	flag.Parse()
 	flag.Set("logtostderr", "true")
 
+	server := os.Getenv("NFS_SERVER")
+	if server == "" {
+		glog.Fatal("NFS_SERVER not set")
+	}
+	path := os.Getenv("NFS_PATH")
+	if path == "" {
+		glog.Fatal("NFS_PATH not set")
+	}
+	provisionerName := os.Getenv(provisionerNameKey)
+	if provisionerName == "" {
+		glog.Fatalf("environment variable %s is not set! Please set it.", provisionerNameKey)
+	}
+
 	// Create an InClusterConfig and use it to create a client for the controller
 	// to use to communicate with Kubernetes
 	config, err := rest.InClusterConfig()
@@ -131,18 +127,14 @@ func main() {
 		glog.Fatalf("Error getting server version: %v", err)
 	}
 
-	// Create the provisioner: it implements the Provisioner interface expected by
-	// the controller
-	clientNFSProvisioner := NewClientNFSProvisioner(clientset)
-
-	provisionerName := os.Getenv(provisionerNameKey)
-	if provisionerName == "" {
-		glog.Fatalf("environment variable %s is not set! Please set it.", provisionerNameKey)
+	clientNFSProvisioner := &nfsProvisioner{
+		server: server,
+		path:   path,
 	}
-
 	// Start the provision controller which will dynamically provision efs NFS
 	// PVs
-	pc := controller.NewProvisionController(clientset,
+	pc := controller.NewProvisionController(
+		clientset,
 		resyncPeriod,
 		provisionerName,
 		clientNFSProvisioner,
