@@ -1,3 +1,4 @@
+# Merged into https://github.com/kubernetes-incubator/external-storage. This repo will no longer be maintained.
 # kubernetes client-nfs-provisioner
 - pv provisioned as ${namespace}-${pvcName}-${pvName}
 - pv recycled as archieved-${namespace}-${pvcName}-${pvName}
